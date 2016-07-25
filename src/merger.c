@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include <errno.h>
 #include <string.h>
@@ -27,8 +26,8 @@ void write_file(int fd, int output_fd) {
 
 	memset(buffer, 0, BUFFER_SIZE);
 
-	while(read(fd, buffer, BUFFER_SIZE) > 0) {
-		if(write(output_fd, buffer, BUFFER_SIZE) == -1) {
+	while((read_count = read(fd, buffer, BUFFER_SIZE)) > 0) {
+		if(write(output_fd, buffer, read_count) == -1) {
 			printf("%s\n", strerror(errno));
 			free(buffer);
 			exit(1);
@@ -82,8 +81,7 @@ void scan_dir(THB_List *list, char *directory) {
 		}
 
 		strcpy(path_info_buffer.path, path);
-		path_info_buffer.size = (ssize_t)(ceill(stat_buffer.st_size / BUFFER_SIZE) * BUFFER_SIZE);
-		path_info_buffer.ssize = stat_buffer.st_size;
+		path_info_buffer.size = stat_buffer.st_size;
 		path_info_buffer.mode = stat_buffer.st_mode;
 
 		THB_list_insert_before(list, NULL, &path_info_buffer);
@@ -91,25 +89,22 @@ void scan_dir(THB_List *list, char *directory) {
 }
 
 void write_split_file(int rfd, int wfd, struct file_info *fi) {
-	
 	void *buffer = malloc(BUFFER_SIZE);
 	memset(buffer, 0, BUFFER_SIZE);
 
-	size_t write_size;
+	size_t read_size = BUFFER_SIZE;
 
-	while(read(rfd, buffer, BUFFER_SIZE) > 0 && fi->size > 0) {
-		fi->size -= BUFFER_SIZE;
+	if(fi->size < BUFFER_SIZE) read_size = fi->size;
 
-		write_size = BUFFER_SIZE;
-		if(fi->ssize < BUFFER_SIZE) write_size = fi->ssize;
-
-		if(write(wfd, buffer, write_size) == -1) {
+	while(read(rfd, buffer, read_size) > 0 && fi->size > 0) {
+		if(write(wfd, buffer, read_size) == -1) {
 			printf("%s: %s\n", fi->name, strerror(errno));
 			exit(1);
 		}
 		
 		memset(buffer, 0, BUFFER_SIZE);
-		fi->ssize -= write_size;
+		fi->size -= read_size;
+		if(fi->size < BUFFER_SIZE) read_size = fi->size;
 	}
 
 	free(buffer);
@@ -167,8 +162,7 @@ void merge(int input_count, char **input_files, char *output_file) {
 		} else {
 			if(!is_regs) is_regs = 1;
 			strcpy(path_info_buffer.path, f);
-			path_info_buffer.size = (ssize_t)(ceill(stat_buffer.st_size / BUFFER_SIZE) * BUFFER_SIZE);
-			path_info_buffer.ssize = stat_buffer.st_size;
+			path_info_buffer.size = stat_buffer.st_size;
 			path_info_buffer.mode = stat_buffer.st_mode;
 			THB_list_insert_before(path_list, NULL, &path_info_buffer);
 		}
@@ -200,9 +194,8 @@ void merge(int input_count, char **input_files, char *output_file) {
 		get_file_name(p_path_info->path, &file_name);
 		
 		strcpy(file_info_buffer.name, file_name);
-		file_info_buffer.size = p_path_info->size;
 		file_info_buffer.mode = p_path_info->mode;
-		file_info_buffer.ssize = p_path_info->ssize;
+		file_info_buffer.size = p_path_info->size;
 		
 		if(write(output_fd, (void*)&file_info_buffer, sizeof(file_info_buffer)) == -1) {
 			printf("%s: %s\n", output_file, strerror(errno));

@@ -263,7 +263,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 --install
 AM_CFLAGS = --std=c99 -g3 -DNDEBUG
 merger_SOURCES = src/main.c src/merger.h src/merger.c
-merger_LDADD = -lTHB -lm
+merger_LDADD = -lTHB
 EXTRA_DIST = m4/NOTES
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am

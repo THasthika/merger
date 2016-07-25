@@ -8,14 +8,12 @@
 struct path_info {
 	char path[4096];
 	off_t size;
-	off_t ssize;
 	mode_t mode;
 };
 
 struct file_info {
 	char name[512];
 	off_t size;
-	off_t ssize;
 	mode_t mode;
 };
 
