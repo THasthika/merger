@@ -5,15 +5,22 @@
 
 void usage() {
 	printf("usage: \n");
-	printf("merger [file01] [file02] [file03] ... [output_file] | merge the list of files\n");
-	printf("merger [directory] [output_file] | merge the files in the directory\n");
-	printf("merger -s [merged_file] [output_directory] | splits the merged files\n");
+	printf("\tmerger [file01] [file02] [file03] ... [output_file] | merge the list of files\n");
+	printf("\tmerger [directory] [output_file] | merge the files in the directory\n");
+	printf("\tmerger -s [merged_file] [output_directory] | splits the merged files\n");
 }
 
 int main(int argc, char **argv) {
 	if(argc < 3) {
 		usage();
 		return 1;
+	}
+
+	for(int i = 0; i < argc; i++) {
+		if(!strcmp(argv[i], "--help")) {
+			usage();
+			return 0;
+		}
 	}
 
 	if(!strcmp(argv[1], "-s")) {
