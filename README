@@ -1,0 +1,23 @@
+Merger
+======
+
+A program to merge files into a single file and also split merged files into the original separate files
+
+Dependencies
+------------
+	libTHB (http://github.com/tharindu96/libTHB)
+
+Installation
+------------
+	./autogen.sh
+	./configure
+	make
+	make install
+
+Usage
+-----
+	merge:
+		merger [file-01] [file-02] [output-file]
+		merger [directory] [output-file]
+	split:
+		merger -s [merged-file] [output-directory]
