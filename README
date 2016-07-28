@@ -5,7 +5,7 @@ A program to merge files into a single file and also split merged files into the
 
 Dependencies
 ------------
-	libTHB (http://github.com/tharindu96/libTHB)
+	libTHB (https://github.com/tharindu96/libTHB)
 
 Installation
 ------------
