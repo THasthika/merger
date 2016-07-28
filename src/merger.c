@@ -39,15 +39,13 @@ void write_file(int fd, int output_fd) {
 }
 
 void get_file_name(char *path, char **name) {
-	char *l_del = NULL;
-	
+	char *l_del = path;	
 	for(int i = 0; i < strlen(path); i++) {
 		if(path[i] == '/') {
-			l_del = path + i;
+			l_del = path + i + 1;
 		}
 	}
-
-	*name = l_del + 1;
+	*name = l_del;
 }
 
 void scan_dir(THB_List *list, char *directory) {
