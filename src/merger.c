@@ -170,9 +170,9 @@ void merge(int input_count, char **input_files, char *output_file) {
 
 	int output_fd = creat(output_file, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 	
-	struct merged_file_info mfi = {
-		THB_list_count(path_list)
-	};
+	struct merged_file_info mfi;
+	mfi.count = THB_list_count(path_list);
+	memset(&mfi.padding, 0, PADDING_SIZE);
 
 	if(write(output_fd, (void*)&mfi, sizeof(mfi)) == -1) {
 		printf("%s: %s\n", output_file, strerror(errno));
@@ -231,17 +231,6 @@ void split(char *merged_file, char *output_dir) {
 	if(output_dir[strlen(output_dir) - 1] == '/') output_dir[strlen(output_dir) - 1] = '\0';
 
 	struct stat stat_buffer;
-	if(stat(output_dir, &stat_buffer) == -1) {
-		mkdir(output_dir, 0775);
-		if(stat(output_dir, &stat_buffer) == -1) {
-			printf("%s: %s\n", output_dir, strerror(errno));
-		}
-	}
-
-	if(!S_ISDIR(stat_buffer.st_mode)) {
-		printf("%s: %s\n", output_dir, "not a directory");
-		return;
-	}
 
 	if(stat(merged_file, &stat_buffer) == -1) {
 		printf("%s: %s\n", merged_file, strerror(errno));
@@ -252,6 +241,25 @@ void split(char *merged_file, char *output_dir) {
 	int mfd = open(merged_file, O_SYNC, O_RDONLY);
 	if(read(mfd, (void*)&mfi, sizeof(mfi)) == -1) {
 		printf("%s: %s\n", merged_file, strerror(errno));
+		return;
+	}
+
+	for(int i = 0; i < PADDING_SIZE; i++) {
+		if(mfi.padding[i] != 0) {
+			printf("%s: %s\n", merged_file, "is not a merged file.");
+			return;
+		}
+	}
+	
+	if(stat(output_dir, &stat_buffer) == -1) {
+		mkdir(output_dir, 0775);
+		if(stat(output_dir, &stat_buffer) == -1) {
+			printf("%s: %s\n", output_dir, strerror(errno));
+		}
+	}
+
+	if(!S_ISDIR(stat_buffer.st_mode)) {
+		printf("%s: %s\n", output_dir, "not a directory");
 		return;
 	}
 

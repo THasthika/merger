@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <THB/list.h>
 
+#define PADDING_SIZE 1024
+
 struct path_info {
 	char path[4096];
 	off_t size;
@@ -18,6 +20,7 @@ struct file_info {
 };
 
 struct merged_file_info {
+	char padding[PADDING_SIZE];
 	int count;
 };
 
