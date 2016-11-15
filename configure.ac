@@ -19,5 +19,6 @@ AC_CHECK_LIB(THB, THB_list_create)
 AC_CONFIG_FILES([Makefile])
 
 AM_INIT_AUTOMAKE([1.11 subdir-objects -Wall -Werror])
+AM_SILENT_RULES([yes])
 
 AC_OUTPUT
