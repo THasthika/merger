@@ -19,6 +19,7 @@ Makefile.in
 /build-aux
 /test-data
 /data-test
+/libal
 
 /src/.deps
 *.o
