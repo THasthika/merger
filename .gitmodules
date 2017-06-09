@@ -1,0 +1,3 @@
+[submodule "libal"]
+	path = libal
+	url = https://github.com/tharindu96/libal.git
