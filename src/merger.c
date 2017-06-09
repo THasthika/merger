@@ -11,8 +11,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <THB/list.h>
-#include <THB/queue.h>
+#include <list.h>
+#include <queue.h>
 
 #include "merger.h"
 
@@ -48,7 +48,7 @@ void get_file_name(char *path, char **name) {
 	*name = l_del;
 }
 
-void scan_dir(THB_List *list, char *directory) {
+void scan_dir(AL_List *list, char *directory) {
         DIR *dp;
 	struct dirent *files;
 
@@ -82,7 +82,7 @@ void scan_dir(THB_List *list, char *directory) {
 		path_info_buffer.size = stat_buffer.st_size;
 		path_info_buffer.mode = stat_buffer.st_mode;
 
-		THB_list_insert_before(list, NULL, &path_info_buffer);
+		AL_list_insert_before(list, NULL, &path_info_buffer);
 	}
 }
 
@@ -108,17 +108,17 @@ void write_split_file(int rfd, int wfd, struct file_info *fi) {
 	free(buffer);
 }
 
-void split_files(int fd, THB_Queue *queue, char *output_dir) {
+void split_files(int fd, AL_Queue *queue, char *output_dir) {
 	
 	struct file_info fi;
 
 	char path[4096];
 
 	int i = 1;
-	int total = THB_list_count(queue);
+	int total = AL_list_count(queue);
 
-	while(THB_list_count(queue) > 0) {
-		THB_queue_dequeue(queue, (void*)&fi);
+	while(AL_list_count(queue) > 0) {
+		AL_queue_dequeue(queue, (void*)&fi);
 
 		strcpy(path, output_dir);
 		strcat(path, "/");
@@ -145,8 +145,8 @@ void merge(int input_count, char **input_files, char *output_file) {
 		return;
 	}
 
-	THB_List *path_list = (THB_List*)malloc(sizeof(THB_List));
-	THB_list_create(path_list, sizeof(struct path_info), NULL);
+	AL_List *path_list = (AL_List*)malloc(sizeof(AL_List));
+	AL_list_create(path_list, sizeof(struct path_info), NULL);
 
 	for(int i = 0; i < input_count; i++) {
 		char *f = input_files[i];
@@ -162,16 +162,16 @@ void merge(int input_count, char **input_files, char *output_file) {
 			strcpy(path_info_buffer.path, f);
 			path_info_buffer.size = stat_buffer.st_size;
 			path_info_buffer.mode = stat_buffer.st_mode;
-			THB_list_insert_before(path_list, NULL, &path_info_buffer);
+			AL_list_insert_before(path_list, NULL, &path_info_buffer);
 		}
 	}
 
-	printf("%d files are to be merged into %s\n", THB_list_count(path_list), output_file);
+	printf("%d files are to be merged into %s\n", AL_list_count(path_list), output_file);
 
 	int output_fd = creat(output_file, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 	
 	struct merged_file_info mfi;
-	mfi.count = THB_list_count(path_list);
+	mfi.count = AL_list_count(path_list);
 	memset(&mfi.padding, 0, PADDING_SIZE);
 
 	if(write(output_fd, (void*)&mfi, sizeof(mfi)) == -1) {
@@ -179,7 +179,7 @@ void merge(int input_count, char **input_files, char *output_file) {
 		goto clean_out;
 	}
 
-	THB_ListItem *item = THB_list_head(path_list);
+	AL_ListItem *item = AL_list_head(path_list);
 	
 	struct path_info *p_path_info;
 	struct file_info file_info_buffer;
@@ -202,7 +202,7 @@ void merge(int input_count, char **input_files, char *output_file) {
 		item = item->next;
 	}
 
-	item = THB_list_head(path_list);
+	item = AL_list_head(path_list);
 
 	int i = 1;
 
@@ -213,7 +213,7 @@ void merge(int input_count, char **input_files, char *output_file) {
 		write_file(fd, output_fd);
 		close(fd);
 
-		printf("%d/%d\t %s ...done\n", i, THB_list_count(path_list), p_path_info->path);
+		printf("%d/%d\t %s ...done\n", i, AL_list_count(path_list), p_path_info->path);
 
 		item = item->next;
 		i++;
@@ -223,7 +223,7 @@ clean_out:
 
 	close(output_fd);
 
-	THB_list_destroy(path_list);
+	AL_list_destroy(path_list);
 	free(path_list);
 }
 
@@ -263,8 +263,8 @@ void split(char *merged_file, char *output_dir) {
 		return;
 	}
 
-	THB_Queue *queue = (THB_Queue*) malloc(sizeof(THB_Queue));
-	THB_queue_create(queue, sizeof(struct file_info), NULL);
+	AL_Queue *queue = (AL_Queue*) malloc(sizeof(AL_Queue));
+	AL_queue_create(queue, sizeof(struct file_info), NULL);
 
 	struct file_info fi;
 	for(int i = 0; i < mfi.count; i++) {
@@ -273,13 +273,13 @@ void split(char *merged_file, char *output_dir) {
 			return;
 		}
 
-		THB_queue_enqueue(queue, (void*)&fi);
+		AL_queue_enqueue(queue, (void*)&fi);
 	}
 
 	printf("%d files to be splitted into '%s' directory\n", mfi.count, output_dir);
 
 	split_files(mfd, queue, output_dir);	
 
-	THB_queue_destroy(queue);
+	AL_queue_destroy(queue);
 	free(queue);
 }
